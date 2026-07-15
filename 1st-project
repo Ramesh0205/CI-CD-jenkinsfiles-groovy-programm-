@@ -1,0 +1,29 @@
+pipeline {
+
+    agent any
+
+    environment {
+
+        APP_NAME = "employee-webapp"
+
+        ENV = "DEV"
+
+    }
+
+    stages {
+
+        stage('Info') {
+
+            steps {
+
+                echo "Application : ${APP_NAME}"
+
+                echo "Environment : ${ENV}"
+
+            }
+
+        }
+
+    }
+
+}
