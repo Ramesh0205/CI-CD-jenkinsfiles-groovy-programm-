@@ -1,0 +1,383 @@
+pipeline {
+
+    agent any
+
+    environment {
+
+        APP_NAME = "employee-webapp"
+
+        ENV = "DEV"
+
+    }
+
+    stages {
+
+        stage('Info') {
+
+            steps {
+
+                echo "Application : ${APP_NAME}"
+
+                echo "Environment : ${ENV}"
+
+            }
+
+        }
+
+    }
+
+}
+
+
+
+1. Environment Variables
+
+Sometimes we use the same value many times.
+
+Example:
+
+Instead of writing:
+
+sh 'mvn clean package'
+
+everywhere, we can store values in variables.
+
+Example:
+
+pipeline {
+
+    agent any
+
+    environment {
+
+        APP_NAME = "employee-webapp"
+
+        ENV = "DEV"
+
+    }
+
+    stages {
+
+        stage('Info') {
+
+            steps {
+
+                echo "Application : ${APP_NAME}"
+
+                echo "Environment : ${ENV}"
+
+            }
+
+        }
+
+    }
+
+}
+Output
+Application : employee-webapp
+
+Environment : DEV
+Why Environment Variables?
+
+Suppose tomorrow your application name changes.
+
+Without variables:
+
+employee-webapp
+
+employee-webapp
+
+employee-webapp
+
+employee-webapp
+
+Need to change everywhere.
+
+With variables:
+
+APP_NAME="employee-webapp"
+
+Change only one line.
+
+2. Build Parameters
+
+Sometimes users want to choose something before starting the build.
+
+Example:
+
+Deploy to:
+
+DEV
+
+QA
+
+UAT
+
+PROD
+
+Instead of creating four jobs, we use Parameters.
+
+Example:
+
+pipeline {
+
+    agent any
+
+    parameters {
+
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['DEV','QA','UAT'],
+            description: 'Select Environment'
+        )
+
+    }
+
+    stages {
+
+        stage('Deploy') {
+
+            steps {
+
+                echo "Deploying to ${params.ENVIRONMENT}"
+
+            }
+
+        }
+
+    }
+
+}
+
+Before running the build,
+
+Jenkins asks:
+
+Select Environment
+
+DEV
+
+QA
+
+UAT
+Real Company Example
+
+Developer clicks
+
+Build with Parameters
+
+Chooses
+
+QA
+
+Pipeline deploys only to QA.
+
+3. Post Actions
+
+What happens after the build finishes?
+
+Jenkins supports:
+
+always
+
+success
+
+failure
+
+Example:
+
+pipeline {
+
+    agent any
+
+    stages {
+
+        stage('Build') {
+
+            steps {
+
+                echo "Building..."
+
+            }
+
+        }
+
+    }
+
+    post {
+
+        always {
+
+            echo "Pipeline Finished"
+
+        }
+
+        success {
+
+            echo "Build Successful"
+
+        }
+
+        failure {
+
+            echo "Build Failed"
+
+        }
+
+    }
+
+}
+If Build Success
+
+Output
+
+Building...
+
+Build Successful
+
+Pipeline Finished
+If Build Failed
+
+Output
+
+Build Failed
+
+Pipeline Finished
+Why Post Actions?
+
+Real companies use them for:
+
+Email Notifications
+Slack Notifications
+Teams Notifications
+Cleanup
+Archive Logs
+
+Example:
+
+Build Failed
+
+↓
+
+Email Team
+
+↓
+
+Create Incident
+
+↓
+
+Notify Slack
+4. Complete Pipeline Example
+pipeline {
+
+    agent any
+
+    environment {
+
+        APP_NAME = "employee-webapp"
+
+    }
+
+    stages {
+
+        stage('Checkout') {
+
+            steps {
+
+                echo "Downloading Code"
+
+            }
+
+        }
+
+        stage('Build') {
+
+            steps {
+
+                sh 'mvn clean package'
+
+            }
+
+        }
+
+        stage('Deploy') {
+
+            steps {
+
+                echo "Deploying ${APP_NAME}"
+
+            }
+
+        }
+
+    }
+
+    post {
+
+        success {
+
+            echo "Deployment Successful"
+
+        }
+
+        failure {
+
+            echo "Deployment Failed"
+
+        }
+
+        always {
+
+            echo "Pipeline Finished"
+
+        }
+
+    }
+
+}
+Real Company Pipeline
+
+A production Jenkins Pipeline looks like this:
+
+Checkout
+
+↓
+
+Compile
+
+↓
+
+Unit Test
+
+↓
+
+SonarQube Scan
+
+↓
+
+Package
+
+↓
+
+Upload to Nexus
+
+↓
+
+Docker Build
+
+↓
+
+Docker Push
+
+↓
+
+Deploy Kubernetes
+
+↓
+
+Smoke Test
+
+↓
+
+Notify Slack
